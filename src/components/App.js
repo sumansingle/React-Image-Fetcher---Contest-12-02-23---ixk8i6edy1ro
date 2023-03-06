@@ -1,45 +1,43 @@
-import React, { useEffect, useState } from 'react'
-import '../styles/App.css';
-import { Loader } from './Loader';
-import { PhotoFrame } from './PhotoFrame';
-
-const fetchPosts = async (id) => {
-    let url = `https://jsonplaceholder.typicode.com/photos/${id}`;
-  return fetch(url);
-}
+import React, { useEffect, useState } from "react";
+import "../styles/App.css";
+import { Loader } from "./Loader";
+import { PhotoFrame } from "./PhotoFrame";
 
 const App = () => {
-    const[data,setData]=useState([])
-    const[id,setId]=useState(null)
-    const handleChange=(e)=>{
-        setId(e.target.value)
-    }
-    
-    const loadData = async () => {
-        fetchPosts(id)
-          .then((res) => res.json())
-          .then((jsonData) => {
-            setData(jsonData);
-          })
+  const [id, setId] = useState();
+  const [loading, setLoading] = useState(false);
+  const [imgData, setImgData] = useState();
+
+  const handleNumber = (e) => {
+    const number = e.target.value;
+    async function fetchData(id) {
+      try {
+        setLoading(true);
+        const rawData = await fetch(
+          `https://jsonplaceholder.typicode.com/photos/${id}`
+        );
+        const data = await rawData.json();
+        setImgData(data);
+      } catch (error) {
+      } finally {
+        setLoading(false);
       }
-    
-      useEffect(() => {
-        loadData();
-      }, []);
-    
-      useEffect(() => {
-        setData(null)
-        loadData()
-      }, [id])
+    }
+    setId(number);
+    fetchData(number);
+  };
+  return (
+    <div id="main">
+      Id number&nbsp;
+      <input type="number" value={id} onChange={handleNumber} />
+      {loading ? (
+        <Loader />
+      ) : !loading && imgData && id !== 0 ? (
+        <PhotoFrame id={imgData.id} url={imgData.url} title={imgData.title} />
+      ) : null}
+    </div>
+  );
+};
 
-    return(
-        <div>
-            <span>Id number</span>
-            <input type="number" onChange={handleChange} />
-            {data == null ? ( <Loader/> ) : <PhotoFrame url={data.url} title={data.title}/>}
-        </div>
-    )
-}
+export default App;
 
-
-export default App
